@@ -459,6 +459,7 @@ fn main() {
 }
 ```
 ## 2.3 所有权和借用
+### 2.3.1 所有权
 #### 零碎知识点
 如何将不需要的内存空间清空？三大流派：
 1. GC: Java, Go.
@@ -603,5 +604,487 @@ fn main() {
     let mut s1 = s;
 
     s1.push_str("world")
+}
+
+fn main() {
+    let x = Box::new(5);
+    
+    let mut y = Box::new(3);     // 完成该行代码，不要修改其它行！
+    
+    *y = 4;
+    
+    assert_eq!(*x, 5);
+}
+
+fn main() {
+    #[derive(Debug)]
+    struct Person {
+        name: String,
+        age: Box<u8>,
+    }
+
+    let person = Person {
+        name: String::from("Alice"),
+        age: Box::new(20),
+    };
+
+    // 通过这种解构式模式匹配，person.name 的所有权被转移给新的变量 `name`
+    // 但是，这里 `age` 变量却是对 person.age 的引用, 这里 ref 的使用相当于: let age = &person.age 
+    // ref并不会转移所有权，只是拿到了指针地址。
+    let Person { name, ref age } = person;
+
+    println!("The person's age is {}", age);
+
+    println!("The person's name is {}", name);
+
+    // Error! 原因是 person 的一部分已经被转移了所有权，因此我们无法再使用它
+    // println!("The person struct is {:?}", person);
+
+    // 虽然 `person` 作为一个整体无法再被使用，但是 `person.age` 依然可以使用
+    println!("The person's age from person struct is {}", person.age);
+}
+
+fn main() {
+   let t = (String::from("hello"), String::from("world"));
+
+   let _s = t.0;
+
+   // 仅修改下面这行代码，且不要使用 `_s`
+   println!("{:?}", t.1);
+}
+
+fn main() {
+   let t = (String::from("hello"), String::from("world"));
+
+   // 填空，不要修改其它代码
+   let (ref s1, ref s2) = t;
+
+   println!("{:?}, {:?}, {:?}", s1, s2, t); // -> "hello", "world", ("hello", "world")
+}
+```
+### 2.3.2 引用与借用
+#### 零碎知识点
+常规引用和指针一毛一样。
+```rust
+fn main() {
+    let x = 5;
+    let y = &x;
+
+    assert_eq!(5, x);
+    assert_eq!(5, *y);
+}
+```
+
+不可变引用：`&`允许使用值，但不获取所有权。
+```rust
+fn main() {
+    let s1 = String::from("hello");
+
+    let len = calculate_length(&s1);
+
+    println!("The length of '{}' is {}.", s1, len);
+}
+
+fn calculate_length(s: &String) -> usize {
+    s.len()
+}
+```
+当然，通过引用指向的值默认是不可变的。但同样有一种可变引用的方式，直接利用关键字`mut`让引用也变得可变就好了。但是这种引用在同一个作用域中只能有一个。并且，可变引用和不可变引用不能同时存在。
+```rust
+fn main() {
+    let mut s = String::from("hello");
+
+    change(&mut s);
+}
+
+fn change(some_string: &mut String) {
+    some_string.push_str(", world");
+}
+```
+
+新版的Rust会让引用作用域的结束位置从花括号变成最后一次试用的位置，让我们的工作变得灵活了很多。该优化被称作`Non-Lexical Lifetimes（NLL）`。
+
+悬垂引用：dangling references
+
+不同于返回s, 在函数终结之前移交的是&s，而s本身并没有送出去，因此堆内的`s`会被释放（因为没有人承接它）。
+```rust
+fn dangle() -> &String { // dangle 返回一个字符串的引用
+
+    let s = String::from("hello"); // s 是一个新字符串
+
+    &s // 返回字符串 s 的引用
+} // 这里 s 离开作用域并被丢弃。其内存被释放。
+  // 危险！
+```
+#### 题解
+```rust
+fn main() {
+   let x = 5;
+   // 填写空白处
+   let p = &x;
+
+   println!("x 的内存地址是 {:p}", p); // output: 0x16fa3ac84
+}
+
+fn main() {
+    let x = 5;
+    let y = &x;
+
+    // 只能修改以下行
+    assert_eq!(5, *y);
+}
+
+// 修复错误
+fn main() {
+    let mut s = String::from("hello, ");
+
+    borrow_object(&s);
+}
+
+fn borrow_object(s: &String) {} // 不可变引用
+
+// 修复错误
+fn main() {
+    let mut s = String::from("hello, ");
+
+    push_str(&mut s);
+}
+
+fn push_str(s: &mut String) {
+    s.push_str("world")
+}
+
+fn main() {
+    let mut s = String::from("hello, ");
+
+    // 填写空白处，让代码工作
+    let p = &mut s;
+    
+    p.push_str("world");
+    println!("{}", s);
+}
+
+fn main() {
+    let c = '中';
+
+    let r1 = &c;
+    // 填写空白处，但是不要修改其它行的代码
+    let ref r2 = c; // ref的引用能得到一个值的引用。
+
+    assert_eq!(*r1, *r2);
+    
+    // 判断两个内存地址的字符串是否相等
+    assert_eq!(get_addr(r1),get_addr(r2));
+}
+
+// 获取传入引用的内存地址的字符串形式
+fn get_addr(r: &char) -> String {
+    format!("{:p}", r)
+}
+
+// 移除代码某个部分，让它工作
+// 你不能移除整行的代码！
+fn main() {
+    let mut s = String::from("hello");
+
+    let r1 = &s;
+    let r2 = &s;
+
+    println!("{}, {}", r1, r2);
+}
+
+fn main() {
+    // 通过修改下面一行代码来修复错误
+    let  s = String::from("hello, ");
+
+    borrow_object(&s)
+}
+
+fn borrow_object(s: &String) {}
+
+
+// 下面的代码没有任何错误，从可变的对象借用不可变的东西是可行的。
+fn main() {
+    let mut s = String::from("hello, ");
+
+    borrow_object(&s);
+    
+    s.push_str("world");
+}
+
+fn borrow_object(s: &String) {}
+
+
+// 注释掉一行代码让它工作，这个工作和生命周期有关系。
+fn main() {
+    let mut s = String::from("hello, ");
+
+    let r1 = &mut s;
+    r1.push_str("world");
+    let r2 = &mut s;
+    r2.push_str("!");
+    
+    //println!("{}",r1);
+}
+
+
+fn main() {
+    let mut s = String::from("hello, ");
+
+    let r1 = &mut s;
+    let r2 = &mut s;
+    // println!("r1 = {}, r2 = {}", r1, r2);// 当然是错的捏。
+    // 在下面增加一行代码人为制造编译错误：cannot borrow `s` as mutable more than once at a time
+    // 你不能同时使用 r1 和 r2
+}
+```
+## 2.4 复合类型
+`unimplemented!()`标记往往意味着暂时不实现功能，和`todo()!`功能一致，会返回`!`信息。对于复合类型的需求是因为基本数据类型确实没法帮助程序员完成更加复杂的工作，程序员需要从更高的抽象层去简化代码。
+
+`#![allow(unused_variables)]`表示文件全局内均享受这个编译器噪声，而`#[allow(unused_variables)]`则表示仅下面这个块会享受这个编译器噪声。
+### 2.4.1 字符串与切片
+#### 零碎知识点
+Rust有Go中流行的切片，可以通过切片实现字符串的截取。
+```rust
+let s = String::from("hello world");
+
+let hello = &s[0..5];
+let world = &s[6..11];
+// s[0..len], s[..]表示全部选取
+```
+特别的，这边的切片是左闭右开区间。需要小心的是，对于UTF-8格式的字符做完整的截取，不能截取一半。比如中文字符在UTF-8中占三个字节，不可以尝试肢解前两个字节。
+
+下述例子展现了Rust切片不可变与可变的编译冲突。
+```rust
+fn main() {
+    let mut s = String::from("hello world");
+
+    let word = first_word(&s);
+
+    s.clear(); // error!
+
+    println!("the first word is: {}", word);
+}
+fn first_word(s: &String) -> &str {
+    &s[..1]
+}
+```
+
+在Rust中的字符串字面量的类型是&str。&str是一个不可变的引用。也可以被视作是字符串切片的类型。
+```rust
+let s: &str = "hello world!";
+```
+
+与字符不同（编码Unicode），字符串是UTF-8编码。与语言级别上仅有的`str`类型不同，Rust标准库内同样存在`String`这一个动态UTF-8编码字符串。这两种类型可以自由转换：
+```rust
+fn main() {
+    let s = String::from("hello,world!");
+    say_hello(&s);
+    say_hello(&s[..]);
+    say_hello(s.as_str());
+}
+
+fn say_hello(s: &str) {
+    println!("{}",s);
+}
+```
+
+因为上述的编码方式，String是不允许索引的（毕竟UTF-8的话可能会有幺蛾子出来）。即便利用`&str`硬编码切片索引，也要合乎规范才可以使用，否则会panic。
+```rust
+let hello = "中国人";
+
+let s = &hello[0..2];
+```
+比如中文占3个字节，这个行为就会panic。
+
+#### 题解：
+1. 字符串
+```rust
+// 修复错误，不要新增代码行
+fn main() {
+    let s: &str = "hello, world";
+}
+
+// 使用至少两种方法来修复错误
+fn main() {
+    let s: Box<str> = "hello, world".into();
+    //greetings(&s)
+    greetings(s);
+}
+
+fn greetings(s: Box<str>/*s: &str*/) {
+    println!("{}",s)
+}
+
+// 填空
+fn main() {
+    let mut s = String::from("");
+    s.push_str("hello, world");
+    s.push('!');
+
+    assert_eq!(s, "hello, world!");
+}
+
+// 修复所有错误，并且不要新增代码行
+fn main() {
+    let mut s = String::from("hello");
+    s.push(',');
+    s.push_str(" world");
+    s += "!"; // 利用add进行相加的话，不需要把&str利用to_string转化。
+
+    println!("{}", s)
+}
+
+// 填空
+fn main() {
+    let s = String::from("I like dogs");
+    // 以下方法会重新分配一块内存空间，然后将修改后的字符串存在这里
+    let s1 = s.replace("dogs", "cats");
+
+    assert_eq!(s1, "I like cats")
+}
+
+// 修复所有错误，不要删除任何一行代码
+fn main() {
+    let s1 = String::from("hello,");
+    let s2 = String::from("world!");
+    let s3 = s1 + &s2; 
+    assert_eq!(s3,"hello,world!");
+    // println!("{}",s1);
+}
+
+// 使用至少两种方法来修复错误
+fn main() {
+    let s = "hello, world";
+    greetings(&s)
+    // greetings(s.to_string());
+}
+
+fn greetings(s: &str/*s: String*/) {
+    println!("{}",s)
+}
+
+// 使用两种方法来解决错误，不要新增代码行
+fn main() {
+    let s = "hello, world"/*.to_string()*/;
+    let s1: &str = s/*.as_str()*/;
+}
+
+fn main() {
+    // 你可以使用转义的方式来输出想要的字符，这里我们使用十六进制的值，例如 \x73 会被转义成小写字母 's'
+    // 填空以输出 "I'm writing Rust"
+    let byte_escape = "I'm writing Ru\x73\x74!";
+    println!("What are you doing\x3F (\\x3F means ?) {}", byte_escape);
+
+    // 也可以使用 Unicode 形式的转义字符
+    let unicode_codepoint = "\u{211D}";
+    let character_name = "\"DOUBLE-STRUCK CAPITAL R\"";
+
+    println!("Unicode character {} (U+211D) is called {}",
+                unicode_codepoint, character_name );
+
+    // 还能使用 \ 来连接多行字符串
+    let long_string = "String literals
+                        can span multiple lines.
+                        The linebreak and indentation here \
+                         can be escaped too!";
+    println!("{}", long_string);
+}
+
+/* 填空并修复所有错误 */
+fn main() {
+    let raw_str = "Escapes don't work here: \x3F \u{211D}";
+    // 修改上面的行让代码工作
+    assert_eq!(raw_str, "Escapes don't work here: ? ℝ");
+
+    // 如果你希望在字符串中使用双引号，可以使用以下形式
+    let quotes = r#"And then I said: "There is no escape!""#;
+    println!("{}", quotes);
+
+    // 如果希望在字符串中使用 # 号，可以如下使用：
+    let  delimiter = r###"A string with "# in it. And even "##!"###;
+    println!("{}", delimiter);
+
+    // 填空
+    let long_delimiter = "Hello, \"##\"";
+    println!("{}", long_delimiter);
+    assert_eq!(long_delimiter, "Hello, \"##\"")
+}
+//'Tokens' 章节.可以参阅，以了解一些字节字符串的信息。
+
+fn main() {
+    let s1 = String::from("hi,中国");
+    let h = &s1[0..1]; // 修改当前行来修复错误，提示: `h` 字符在 UTF-8 格式中只需要 1 个字节来表示
+    assert_eq!(h, "h");
+
+    let h1 = &s1[3..6];// 修改当前行来修复错误，提示: `中` 字符在 UTF-8 格式中需要 3 个字节来表示
+    assert_eq!(h1, "中");
+}
+
+fn main() {
+    // 填空，打印出 "你好，世界" 中的每一个字符
+    for c in "你好，世界".chars() {
+        println!("{}", c)
+    }
+}
+
+// 修复代码中的错误，不要新增代码行!
+fn main() {
+    let arr = [1, 2, 3];
+    let s1: &[i32] = &arr[0..2];
+
+    let s2: &str = "hello, world" as &str;
+}
+
+// 一个切片占用了两个字大小的内存空间，一个是指向数据的指针，一个是切片的长度。
+fn main() {
+    let arr: [char; 3] = ['中', '国', '人']; // unicode格式。
+
+    let slice = &arr[..2];
+    
+    // 修改数字 `8` 让代码工作
+    // 小提示: 切片和数组不一样，它是引用。如果是数组的话，那下面的 `assert!` 将会通过： '中'和'国'是char类型，char类型是Unicode编码，大小固定为4字节，两个字符为8字节。
+    assert!(std::mem::size_of_val(&slice) == 16); // 这边问的是切片引用的大小。而不是切片内含有的'中''国'两个字符占了多大的空间。
+}
+
+fn main() {
+   let arr: [i32; 5] = [1, 2, 3, 4, 5];
+  // 填空让代码工作起来
+  let slice: &[i32] = &arr[1..4];
+  assert_eq!(slice, &[2, 3, 4]);
+}
+
+fn main() {
+    let s = String::from("hello");
+
+    let slice1 = &s[0..2];
+    // 填空，不要再使用 0..2
+    let slice2 = &s[0..=1];
+
+    assert_eq!(slice1, slice2);
+}
+
+fn main() {
+    let s = "你好，世界";
+    // 修改以下代码行，让代码工作起来
+    let slice = &s[0..3];
+
+    assert!(slice == "你");
+}
+
+// 修复所有错误
+fn main() {
+    let mut s = String::from("hello world");
+
+    // 这里, &s 是 `&String` 类型，但是 `first_character` 函数需要的是 `&str` 类型。
+    // 尽管两个类型不一样，但是代码仍然可以工作，原因是 `&String` 会被隐式地转换成 `&str` 类型，如果大家想要知道更多，可以看看 Deref 章节: https://course.rs/advance/smart-pointer/deref.html
+    let ch = first_character(&s);
+
+    // s.clear(); // error!
+
+    println!("the first character is: {}", ch);
+}
+fn first_character(s: &str) -> &str {
+    &s[..1]
 }
 ```
