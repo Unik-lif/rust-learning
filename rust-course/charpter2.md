@@ -1,5 +1,48 @@
-## 2.1 变量与常量
-### 零碎知识点
+# Charpter2： Rust基本知识整理
+主要对照Rust Course内的信息做的知识整理，此外还包含个人写的题解。
+
+<!-- vscode-markdown-toc -->
+* 1. [变量与常量](#)
+	* 1.1. [零碎知识点](#-1)
+	* 1.2. [题解：](#-1)
+* 2. [基本类型](#-1)
+	* 2.1. [数值类型](#-1)
+		* 2.1.1. [零碎知识点](#-1)
+		* 2.1.2. [题解：](#-1)
+	* 2.2. [字符、布尔、单元类型](#-1)
+		* 2.2.1. [零碎知识点](#-1)
+		* 2.2.2. [题解：](#-1)
+	* 2.3. [语句和表达式](#-1)
+		* 2.3.1. [零碎知识点](#-1)
+		* 2.3.2. [题解](#-1)
+	* 2.4. [函数](#-1)
+		* 2.4.1. [零碎知识点](#-1)
+		* 2.4.2. [题解](#-1)
+* 3. [所有权和借用](#-1)
+	* 3.1. [所有权](#-1)
+		* 3.1.1. [零碎知识点](#-1)
+	* 3.2. [题解：](#-1)
+	* 3.3. [引用与借用](#-1)
+		* 3.3.1. [零碎知识点](#-1)
+		* 3.3.2. [题解](#-1)
+* 4. [复合类型](#-1)
+	* 4.1. [字符串与切片](#-1)
+		* 4.1.1. [零碎知识点](#-1)
+		* 4.1.2. [题解：](#-1)
+	* 4.2. [元祖](#-1)
+		* 4.2.1. [零碎知识点](#-1)
+		* 4.2.2. [题解：](#-1)
+	* 4.3. [结构体](#-1)
+		* 4.3.1. [零碎知识点](#-1)
+
+<!-- vscode-markdown-toc-config
+	numbering=true
+	autoSave=true
+	/vscode-markdown-toc-config -->
+<!-- /vscode-markdown-toc -->
+---
+##  1. <a name=''></a>变量与常量
+###  1.1. <a name='-1'></a>零碎知识点
 Rust的赋值更确切来说是绑定，任何内存对象都是有主人的，而且一般情况下完全属于它的主人。
 
 此外，Rust默认变量是不可变的，需要在使用`mut`关键字的情况下才能让变量变为可变。不可变会带来更多的安全性，而可变则会让灵活性得到提升。
@@ -31,7 +74,7 @@ fn main() {
 利用`let`且没有`_`提前的变量是要好好初始化的。
 
 **遗留问题**：解构式赋值暂时还不会使用。
-### 题解：
+###  1.2. <a name='-1'></a>题解：
 ```rust
 // 1. 绑定和可变性
 // 修复下面代码的错误并尽可能少的修改
@@ -117,9 +160,9 @@ fn main() {
 } 
 ```
 
-## 2.2 基本类型
-### 2.2.1 数值类型
-#### 零碎知识点
+##  2. <a name='-1'></a>基本类型
+###  2.1. <a name='-1'></a>数值类型
+####  2.1.1. <a name='-1'></a>零碎知识点
 Rust在一定程度上可以推测变量的类型，但在有可能出现模糊的时候，会报错。
 ```rust
 let guess = "42".parse().expect("Not a number!");
@@ -144,7 +187,7 @@ for i in 1..=5 {
     println!("{}",i);
 }
 ```
-#### 题解：
+####  2.1.2. <a name='-1'></a>题解：
 ```rust
 // 移除某个部分让代码工作
 fn main() {
@@ -253,14 +296,14 @@ fn main() {
     println!("0x80 >> 2 is 0x{:x}", 0x80u32 >> 2);
 }
 ```
-### 2.2.2 字符、布尔、单元类型
-#### 零碎知识点
+###  2.2. <a name='-1'></a>字符、布尔、单元类型
+####  2.2.1. <a name='-1'></a>零碎知识点
 Rust中的布尔类型占用内存的大小为1个字节。
 
 单元类型就是`()`，其可以用作`main`函数的返回值，也可以用作`map`的值，表示我们不关注具体的值，仅关注`key`。这种类型的数据是不占字节的。
 
 Rust内的字符大小均为4个字节，是Unicode类型。
-#### 题解：
+####  2.2.2. <a name='-1'></a>题解：
 ```rust
 // 修改2处 `assert_eq!` 让代码工作
 // size_of_val会返回类型所占的字节数目。
@@ -321,14 +364,14 @@ fn main() {
     println!("Success!")
 }
 ```
-### 2.2.3 语句和表达式
-#### 零碎知识点
+###  2.3. <a name='-1'></a>语句和表达式
+####  2.3.1. <a name='-1'></a>零碎知识点
 Rust的函数让最后一个表达式来返回值。表达式不同于一般的语句，不过也没必要太多区分，可以以函数式返回的方式去理解它们。
 
 `let`在目前的Rust版本中是一个语句，不可以用作赋值。而表达式是可以用于赋值的，比如`let a = 5`中的`5`就是表达式。
 
 表达式不能包含分号，否则会变成一条语句。如果表达式不返回任何值，则会隐式返回一个`()`。
-#### 题解
+####  2.3.2. <a name='-1'></a>题解
 ```rust
 // 使用两种方法让代码工作起来
 fn main() {
@@ -360,8 +403,8 @@ fn sum(x: i32, y: i32) -> i32 {
     x + y
 }
 ```
-### 2.2.4 函数
-#### 零碎知识点
+###  2.4. <a name='-1'></a>函数
+####  2.4.1. <a name='-1'></a>零碎知识点
 对于函数的命名，最好按照蛇形的规范，比如命名为`snake_fn`。
 
 对于函数的返回值，可以利用`return`实现提前返回，此外，可以不写`->`，表示返回的东西是`()`。如果函数以`;`结尾，那么同样返回值为`()`。你也可以显式地把返回值`-> ()`写出来。
@@ -373,7 +416,7 @@ fn dead_end() -> ! {
 }
 ```
 
-#### 题解
+####  2.4.2. <a name='-1'></a>题解
 ```rust
 fn main() {
     // 不要修改下面两行代码!
@@ -458,9 +501,9 @@ fn main() {
     println!("Exercise Failed if printing out this line!");
 }
 ```
-## 2.3 所有权和借用
-### 2.3.1 所有权
-#### 零碎知识点
+##  3. <a name='-1'></a>所有权和借用
+###  3.1. <a name='-1'></a>所有权
+####  3.1.1. <a name='-1'></a>零碎知识点
 如何将不需要的内存空间清空？三大流派：
 1. GC: Java, Go.
 2. 手动管理: C, C++.
@@ -538,7 +581,7 @@ fn makes_copy(some_integer: i32) { // some_integer 进入作用域
 } // 这里，some_integer 移出作用域。不会有特殊操作
 ```
 
-### 题解：
+###  3.2. <a name='-1'></a>题解：
 ```rust
 fn main() {
     // 使用尽可能多的方法来通过编译
@@ -662,8 +705,8 @@ fn main() {
    println!("{:?}, {:?}, {:?}", s1, s2, t); // -> "hello", "world", ("hello", "world")
 }
 ```
-### 2.3.2 引用与借用
-#### 零碎知识点
+###  3.3. <a name='-1'></a>引用与借用
+####  3.3.1. <a name='-1'></a>零碎知识点
 常规引用和指针一毛一样。
 ```rust
 fn main() {
@@ -716,7 +759,7 @@ fn dangle() -> &String { // dangle 返回一个字符串的引用
 } // 这里 s 离开作用域并被丢弃。其内存被释放。
   // 危险！
 ```
-#### 题解
+####  3.3.2. <a name='-1'></a>题解
 ```rust
 fn main() {
    let x = 5;
@@ -838,12 +881,12 @@ fn main() {
     // 你不能同时使用 r1 和 r2
 }
 ```
-## 2.4 复合类型
+##  4. <a name='-1'></a>复合类型
 `unimplemented!()`标记往往意味着暂时不实现功能，和`todo()!`功能一致，会返回`!`信息。对于复合类型的需求是因为基本数据类型确实没法帮助程序员完成更加复杂的工作，程序员需要从更高的抽象层去简化代码。
 
 `#![allow(unused_variables)]`表示文件全局内均享受这个编译器噪声，而`#[allow(unused_variables)]`则表示仅下面这个块会享受这个编译器噪声。
-### 2.4.1 字符串与切片
-#### 零碎知识点
+###  4.1. <a name='-1'></a>字符串与切片
+####  4.1.1. <a name='-1'></a>零碎知识点
 Rust有Go中流行的切片，可以通过切片实现字符串的截取。
 ```rust
 let s = String::from("hello world");
@@ -897,7 +940,7 @@ let s = &hello[0..2];
 ```
 比如中文占3个字节，这个行为就会panic。
 
-#### 题解：
+####  4.1.2. <a name='-1'></a>题解：
 1. 字符串
 ```rust
 // 修复错误，不要新增代码行
@@ -1087,4 +1130,573 @@ fn main() {
 fn first_character(s: &str) -> &str {
     &s[..1]
 }
+
+
+// 填空并修复错误
+// 1. 不要使用 `to_string()`
+// 2. 不要添加/删除任何代码行
+fn main() {
+    let mut s: String = String::from("hello, ");
+    s.push_str("world");
+    s.push('!');
+
+    s = move_ownership(s);
+
+    assert_eq!(s, "hello, world!");
+
+    println!("Success!")
+}
+
+fn move_ownership(s: String) -> String {
+    println!("ownership of \"{}\" is moved here!", s);
+    s
+}
+
+// 虽然 String 的底层是 Vec<u8> 也就是字节数组的形式存储的，但是它是基于 UTF-8 编码的字符序列。String 分配在堆上、可增长且不是以 null 结尾。
+// 而 &str 是切片引用类型( &[u8] )，指向一个合法的 UTF-8 字符序列，总之，&str 和 String 的关系类似于 &[T] 和 Vec<T> 。
+
+// 填空
+fn main() {  
+   let mut s = String::from("hello, world");
+
+   let slice1: &str = /*s.as_str()*/ &s[..]; // 使用两种方法
+   assert_eq!(slice1, "hello, world");
+   
+   let slice2 = &s[..5];
+   assert_eq!(slice2, "hello");
+
+   let mut slice3: String = slice1.to_string(); 
+   slice3.push('!');
+   assert_eq!(slice3, "hello, world!");
+
+   println!("Success!")
+}
+
+// 问题:  我们的代码中发生了多少次堆内存分配？
+// 你的回答: 1 + 1 = 2
+fn main() {  
+    // 基于 `&str` 类型创建一个 String,
+    // 字符串字面量的类型是 `&str`
+   let s: String = String::from("hello, world!");
+
+   // 创建一个切片引用指向 String `s`
+   let slice: &str = &s;
+
+   // 基于刚创建的切片来创建一个 String
+   let s: String = slice.to_string();
+
+   assert_eq!(s, "hello, world!");
+
+   println!("Success!")
+}
+
+// 填空并修复错误
+fn main() {
+    let s = String::from("hello, 世界");
+    let slice1 = &s[0..1]; //提示: `h` 在 UTF-8 编码中只占用 1 个字节
+    assert_eq!(slice1, "h");
+
+    let slice2 = &s[7..10];// 提示: `中` 在 UTF-8 编码中占用 3 个字节
+    assert_eq!(slice2, "世");
+    
+    // 迭代 s 中的所有字符
+    for (i, c) in s.chars().enumerate() { // 请注意enumerate的特殊用法。https://www.oreilly.com/library/view/learning-rust/9781785884306/70af2a22-d0e1-46ab-ae11-72630a834c33.xhtml
+        if i == 7 {
+            assert_eq!(c, '世')
+        }
+    }
+
+    println!("Success!")
+}
+
+// 填空
+use std::str;
+fn main() {
+    let mut s = String::new();
+    s.push_str("hello");
+
+    let v = vec![104, 101, 108, 108, 111];
+
+    // 将字节数组转换成 String
+    let s1 = match str::from_utf8(&v) {
+        Ok(v) => v,
+        Err(e) => panic!("Invalid UTF-8 sequence: {}", e),
+    };
+    
+    
+    assert_eq!(s, s1);
+
+    println!("Success!")
+}
+
+
+// 填空
+use std::str;
+fn main() {
+    let mut s = String::new();
+    s.push_str("hello");
+
+    let v = vec![104, 101, 108, 108, 111];
+
+    // 将字节数组转换成 String
+    let s1 = String::from_utf8_lossy(&v);
+    
+    assert_eq!(s, s1);
+
+    println!("Success!")
+}
+
+// String是一个智能指针结构体，其在栈上存放了一个结构体，指向存储在堆上的字符串底层数据。
+// 一个指针只指向堆上的字节数组，已使用的长度以及已分配的容量 capacity (已使用的长度小于等于已分配的容量，当容量不够时，会重新分配内存空间)。
+// 对于capacity的分配，似乎遵循的是*2的原则，从8个字节长度开始计量，如果不够我就不停地乘2.
+
+// 修改下面的代码以打印如下内容: 
+// 25
+// 25
+// 25
+// 循环中不会发生任何内存分配
+fn main() {
+    let mut s = String::with_capacity(25);
+    println!("{}", s.capacity());
+
+    for _ in 0..2 {
+        s.push_str("hello");
+        println!("{}", s.capacity());
+    }
+
+    println!("Success!")
+}
+
+// 填空
+use std::mem;
+
+fn main() {
+    let story = String::from("Rust By Practice");
+
+    // 阻止 String 的数据被自动 drop，这个地方要注意。
+    let mut story = mem::ManuallyDrop::new(story);
+
+    let ptr = story.as_mut_ptr();
+    let len = story.len();
+    let capacity = story.capacity();
+
+    assert_eq!(16, len);
+
+    // 我们可以基于 ptr 指针、长度和容量来重新构建 String. 
+    // 这种操作必须标记为 unsafe，因为我们需要自己来确保这里的操作是安全的
+    let s = unsafe { String::from_raw_parts(ptr, len, capacity) };
+
+    assert_eq!(*story, s);
+
+    println!("Success!")
+}
+```
+###  4.2. <a name='-1'></a>元祖
+####  4.2.1. <a name='-1'></a>零碎知识点
+使用方法极端类似于python内的赋值。
+```rust
+fn main() {
+    let tup: (i32, f64, u8) = (500, 6.4, 1);
+}
+```
+####  4.2.2. <a name='-1'></a>题解：
+```rust
+fn main() {
+    let _t0: (u8,i16) = (0, -1);
+    // 元组的成员还可以是一个元组
+    let _t1: (u8, (i16, u32)) = (0, (-1, 1));
+    // 填空让代码工作
+    let t: (u8, u16, i64, &str, String) = (1u8, 2u16, 3i64, "hello", String::from(", world"));
+}
+
+// 修改合适的地方，让代码工作
+fn main() {
+    let t = ("i", "am", "sunface");
+    assert_eq!(t.2, "sunface");
+}
+
+// 修复代码错误，长度比13小就可以打印了。
+fn main() {
+    let too_long_tuple = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
+    println!("too long tuple: {:?}", too_long_tuple);
+}
+
+fn main() {
+    let tup = (1, 6.4, "hello");
+
+    // 填空
+    let (x, z, y) = tup;
+
+    assert_eq!(x, 1);
+    assert_eq!(y, "hello");
+    assert_eq!(z, 6.4);
+}
+
+fn main() {
+    let (x, y, z);
+
+    // 填空
+    (y, z, x) = (1, 2, 3);
+    
+    assert_eq!(x, 3);
+    assert_eq!(y, 1);
+    assert_eq!(z, 2);
+}
+
+fn main() {
+    // 填空，需要稍微计算下
+    let (x, y) = sum_multiply((3, 2));
+
+    assert_eq!(x, 5);
+    assert_eq!(y, 6);
+}
+
+fn sum_multiply(nums: (i32, i32)) -> (i32, i32) {
+    (nums.0 + nums.1, nums.0 * nums.1)
+}
+```
+###  4.3. <a name='-1'></a>结构体
+####  4.3.1. <a name='-1'></a>零碎知识点
+结构体默认自己的元素不可变。
+
+结构体更新语法。
+```rust
+  let user2 = User {
+        active: user1.active,
+        username: user1.username,
+        email: String::from("another@example.com"),
+        sign_in_count: user1.sign_in_count,
+    };
+
+  let user2 = User {
+        email: String::from("another@example.com"),
+        ..user1
+    };
+```
+利用这样的语法能让除了在`..`以外具体写出来的东西保持不变。当然，`..user1`需要放在尾部。对于动态分配在堆上的东东（即不满足COPY规则的东东），其所有权会发生转移（意料之中）。
+
+Rust内结构体的内存排列与C语言是很接近的，不过至少需要知道哪些东西是存在栈内，哪些东西是存在堆上的。
+![](https://pic3.zhimg.com/80/v2-8cc4ed8cd06d60f974d06ca2199b8df5_1440w.png)
+
+元祖结构体：需要对其整体有一个命名方式，但是对其其中的载荷的名称不是很关心。比如描述三维空间的一个点到原点的距离，这时候就没必要一定把xyz的信息填进去。或者，比如已经把RGB规则写在脸上的东东。
+```rust
+struct Color(i32, i32, i32);
+struct Point(i32, i32, i32);
+let black = Color(0, 0, 0);
+let origin = Point(0, 0, 0);
+```
+
+如果在结构体中使用一个引用，需要加上生命周期（会比较麻烦）
+
+一些关键字：`#[derive(Debug)]`，`dbg!`。
+#### 题解
+```rust
+// fix the error
+struct Person {
+    name: String,
+    age: u8,
+    hobby: String
+}
+fn main() {
+    let age = 30;
+    let p = Person {
+        name: String::from("sunface"),
+        age,
+        hobby: String::from("sing dance rap basketball")
+    };
+} 
+
+struct Unit;
+trait SomeTrait {
+    // ...定义一些行为
+}
+
+// 我们并不关心结构体中有什么数据( 字段 )，但我们关心它的行为。Unit可以什么都不写。
+// 因此这里我们使用没有任何字段的单元结构体，然后为它实现一些行为
+impl SomeTrait for Unit { }
+fn main() {
+    let u = Unit;
+    do_something_with_unit(u);
+} 
+
+// 填空，让代码工作
+fn do_something_with_unit(u: Unit) {   }
+
+
+// 填空并修复错误
+struct Color(i32, i32, i32);
+struct Point(i32, i32, i32);
+fn main() {
+    let v = Color(0, 127, 255);
+    check_color(v);
+}   
+
+fn check_color(p: Color) {
+    let Color(x, y, z) = p;
+    assert_eq!(x, 0);
+    assert_eq!(p.1, 127);
+    assert_eq!(p.2, 255);
+ }
+
+// 填空并修复错误，不要增加或移除代码行
+struct Person {
+    name: String,
+    age: u8,
+}
+fn main() {
+    let age = 18;
+    let mut p = Person {
+        name: String::from("sunface"),
+        age,
+    };
+
+    // how can you believe sunface is only 18? 
+    p.age = 30;
+
+    // 填空
+    p.name = String::from("sunfei");
+}
+
+// 填空
+struct Person {
+    name: String,
+    age: u8,
+}
+fn main() {} 
+
+fn build_person(name: String, age: u8) -> Person {
+    Person {
+        name,
+        age,
+    }
+}
+
+
+// 填空，让代码工作
+struct User {
+    active: bool,
+    username: String,
+    email: String,
+    sign_in_count: u64,
+}
+fn main() {
+    let u1 = User {
+        email: String::from("someone@example.com"),
+        username: String::from("sunface"),
+        active: true,
+        sign_in_count: 1,
+    };
+
+    let u2 = set_email(u1);
+} 
+
+fn set_email(u: User) -> User {
+    User {
+        email: String::from("contact@im.dev"),
+        ..u
+    }
+}
+
+// 填空，让代码工作
+#[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+fn main() {
+    let scale = 2;
+    let rect1 = Rectangle {
+        width: dbg!(30 * scale), // 打印 debug 信息到标准错误输出 stderr,并将 `30 * scale` 的值赋给 `width`
+        height: 50,
+    };
+
+    dbg!(&rect1); // 打印 debug 信息到标准错误输出 stderr
+
+    println!("{:?}", rect1); // 打印 debug 信息到标准输出 stdout
+}
+
+// 修复错误
+#[derive(Debug)]
+struct File {
+    name: String,
+    data: String,
+}
+fn main() {
+    let f = File {
+        name: String::from("readme.md"),
+        data: "Rust By Practice".to_string()
+    };
+
+    let _name = f.name;
+
+    // 只能修改这一行
+    println!("{}, {}", _name, f.data);
+} 
+
+```
+### 枚举
+#### 零碎知识点
+枚举类型可以利用其他值与之关联。任何类型的数据都可以放入到枚举成员中。
+```rust
+enum PokerCard {
+    Clubs(u8),
+    Spades(u8),
+    Diamonds(char),
+    Hearts(char),
+}
+
+fn main() {
+   let c1 = PokerCard::Spades(5);
+   let c2 = PokerCard::Diamonds('A');
+}
+```
+下面的这个例子更能体现出枚举类型的优势所在，如果用struct进行封装，会显得很麻烦。
+```rust
+enum Message {
+    Quit,
+    Move { x: i32, y: i32 },
+    Write(String),
+    ChangeColor(i32, i32, i32),
+}
+
+fn main() {
+    let m1 = Message::Quit;
+    let m2 = Message::Move{x:1,y:1};
+    let m3 = Message::ChangeColor(255,255,0);
+}
+```
+
+Rust抛弃了NULL这个概念，使用Option枚举变量来表述这个结果。
+```rust
+enum Option<T> {
+    Some(T), // 表示该枚举诚愿的数据类型为T，T是泛型参数。
+    None, // 没有值
+}
+```
+利用Option的封装会得到一个好处：这实际上就是加了一层壳的意思，对于T类型的数据，无法实现Option<T>与之相加等相关操作的直接进行，而是需要把这个核桃打开，看看里面是不是空的。那么这个过程就会涉及None值的检查。
+
+如何进行使用，我们可以利用match来实现。
+```rust
+fn plus_one(x: Option<i32>) -> Option<i32> {
+    match x {
+        None => None,
+        Some(i) => Some(i + 1),
+    }
+}
+
+let five = Some(5);
+let six = plus_one(five);
+let none = plus_one(None);
+```
+#### 题解
+```rust
+// 修复错误
+enum Number {
+    Zero,
+    One = 1,
+    Two,
+}
+
+enum Number1 {
+    Zero = 0,
+    One = 1,
+    Two,
+}
+
+// C语言风格的枚举定义
+enum Number2 {
+    Zero = 0,
+    One = 1,
+    Two = 2,
+}
+
+
+fn main() {
+    // 通过 `as` 可以将枚举值强转为整数类型
+    assert_eq!(Number::One as i32, Number1::One as i32);
+    assert_eq!(Number1::One as i32, Number2::One as i32);
+} 
+
+// 填空
+enum Message {
+    Quit,
+    Move { x: i32, y: i32 },
+    Write(String),
+    ChangeColor(i32, i32, i32),
+}
+
+fn main() {
+    let msg1 = Message::Move{x:1, y:2}; // 使用x = 1, y = 2 来初始化
+    let msg2 = Message::Write("hello, world!".to_string()); // 使用 "hello, world!" 来初始化
+} 
+
+
+// 仅填空并修复错误
+enum Message {
+    Quit,
+    Move { x: i32, y: i32 },
+    Write(String),
+    ChangeColor(i32, i32, i32),
+}
+
+fn main() {
+    let msg = Message::Move{x: 1, y: 1};
+
+    if let Message::Move{x:a, y:b} = msg { // 感觉是很奇妙的用法。
+        assert_eq!(a, b);
+    } else {
+        panic!("不要让这行代码运行！");
+    }
+} 
+
+// 填空，并修复错误
+#[derive(Debug)]
+enum Message {
+    Quit,
+    Move { x: i32, y: i32 },
+    Write(String),
+    ChangeColor(i32, i32, i32),
+}
+
+fn main() {
+    let msgs: [Message; 3] = [
+        Message::Quit,
+        Message::Move{x:1, y:3},
+        Message::ChangeColor(255,255,0)
+    ];
+
+    for msg in msgs {
+        show_message(msg)
+    }
+} 
+
+fn show_message(msg: Message) {
+    println!("{:?}", msg);
+}
+
+
+// 填空让 `println` 输出，同时添加一些代码不要让最后一行的 `panic` 执行到
+// 但是这边的if let模式匹配到底是什么东西，为什么可以这样用。搞不灵清，之后学习的时候回来看吧。
+fn main() {
+    let five = Some(5);
+    let six = plus_one(five);
+    let none = plus_one(None);
+
+    if let Some(n) = six {
+        println!("{}", n);
+        return;
+    } 
+        
+    panic!("不要让这行代码运行！");
+} 
+
+fn plus_one(x: Option<i32>) -> Option<i32> {
+    match x {
+        None => None,
+        Some(i) => Some(i + 1),
+    }
+}
+
+// 后面的那道链表题我现在可能太早了，先润。
 ```
