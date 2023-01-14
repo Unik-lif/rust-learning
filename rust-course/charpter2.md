@@ -34,6 +34,23 @@
 		* 4.2.2. [题解：](#-1)
 	* 4.3. [结构体](#-1)
 		* 4.3.1. [零碎知识点](#-1)
+		* 4.3.2. [题解](#-1)
+	* 4.4. [枚举](#-1)
+		* 4.4.1. [零碎知识点](#-1)
+		* 4.4.2. [题解](#-1)
+	* 4.5. [数组](#-1)
+		* 4.5.1. [题解：](#-1)
+* 5. [流程控制](#-1)
+	* 5.1. [零碎知识点](#-1)
+	* 5.2. [题解：](#-1)
+* 6. [模式匹配](#-1)
+	* 6.1. [match和if let](#matchiflet)
+		* 6.1.1. [零碎知识点](#-1)
+		* 6.1.2. [题解](#-1)
+	* 6.2. [模式适用场景](#-1)
+		* 6.2.1. [零碎知识点](#-1)
+	* 6.3. [全模式列表](#-1)
+		* 6.3.1. [零碎知识点](#-1)
 
 <!-- vscode-markdown-toc-config
 	numbering=true
@@ -1389,7 +1406,7 @@ let origin = Point(0, 0, 0);
 如果在结构体中使用一个引用，需要加上生命周期（会比较麻烦）
 
 一些关键字：`#[derive(Debug)]`，`dbg!`。
-#### 题解
+####  4.3.2. <a name='-1'></a>题解
 ```rust
 // fix the error
 struct Person {
@@ -1535,8 +1552,8 @@ fn main() {
 } 
 
 ```
-### 枚举
-#### 零碎知识点
+###  4.4. <a name='-1'></a>枚举
+####  4.4.1. <a name='-1'></a>零碎知识点
 枚举类型可以利用其他值与之关联。任何类型的数据都可以放入到枚举成员中。
 ```rust
 enum PokerCard {
@@ -1589,7 +1606,7 @@ let five = Some(5);
 let six = plus_one(five);
 let none = plus_one(None);
 ```
-#### 题解
+####  4.4.2. <a name='-1'></a>题解
 ```rust
 // 修复错误
 enum Number {
@@ -1699,4 +1716,658 @@ fn plus_one(x: Option<i32>) -> Option<i32> {
 }
 
 // 后面的那道链表题我现在可能太早了，先润。
+```
+###  4.5. <a name='-1'></a>数组
+Rust之中，将`array`称作静态数组，速度较快但是长度固定。将Vector称作动态数组，可以动态增长。
+
+```rust
+let a = [3; 5]; // [3, 3, 3, 3, 3]
+```
+
+由于数组是连续存放元素的，可以通过索引的方式来访问存放在里头的元素。
+
+数组元素是非基本类型的，不可以用String之类的玩意创造数组。因为复杂类型不可以通过Copy来创造，只能通过手动一个一个地创建出来。但是这样很傻，Rust为此提供了一个快捷方式：
+```rust
+let array: [String; 8] = core::array::from_fn(|i| String::from("rust is good!"));
+
+println!("{:#?}", array);
+```
+
+数组切片的类型：
+```rust
+let a: [i32; 5] = [1, 2, 3, 4, 5];
+
+let slice: &[i32] = &a[1..3];
+
+assert_eq!(slice, &[2, 3]);
+```
+`slice`的类型是`&[i32]`。数组的类型是`[i32; 5]`。
+
+切片类型[T]的大小不固定，但是切片的引用&[T]则具有固定的大小。
+
+####  4.5.1. <a name='-1'></a>题解：
+```rust
+fn main() {
+    // 使用合适的类型填空
+    let arr: [i32;5] = [1, 2, 3, 4, 5];
+
+    // 修改以下代码，让它顺利运行
+    assert!(arr.len() == 5);
+}
+
+fn main() {
+    // 很多时候，我们可以忽略数组的部分类型，也可以忽略全部类型，让编译器帮助我们推导
+    let arr0 = [1, 2, 3];
+    let arr: [char; 3] = ['a', 'b', 'c'];
+    
+    // 填空
+    // 数组分配在栈上， `std::mem::size_of_val` 函数会返回整个数组占用的内存空间
+    // 数组中的每个 char 元素占用 4 字节的内存空间，因为在 Rust 中， char 是 Unicode 字符。  这一点与String不同，请牢记。
+    assert!(std::mem::size_of_val(&arr) == 12);
+}
+
+
+fn main() {
+    // 填空
+    let list: [i32; 100] = [1; 100] ;
+
+    assert!(list[0] == 1);
+    assert!(list.len() == 100);
+}
+
+fn main() {
+    // 修复错误，数组内的元素需要是同一个类型。
+    let _arr = [1, 2, 3];
+}
+
+fn main() {
+    let arr = ['a', 'b', 'c'];
+    
+    let ele = arr[0]; // 只修改此行来让代码工作
+
+    assert!(ele == 'a');
+}
+
+// 修复代码中的错误
+fn main() {
+    let names = [String::from("Sunfei"), "Sunface".to_string()];
+    
+    // `get` 返回 `Option<T>` 类型，因此它的使用非常安全
+    let name0 = names.get(0).unwrap();
+
+    // 但是下标索引就存在越界的风险了
+    let _name1 = &names[1];
+    println!("{} {}", name0, _name1);
+}
+
+```
+##  5. <a name='-1'></a>流程控制
+###  5.1. <a name='-1'></a>零碎知识点
+`if`语句块是表达式，因此`if`表达式的返回值是可以用来给number进行赋值的。
+```rust
+fn main() {
+    let condition = true;
+    let number = if condition {
+        5
+    } else {
+        6
+    };
+
+    println!("The value of number is: {}", number);
+}
+```
+`for`的用法与JS接近。注意，一般要使用集合的引用形式，除非之后我们不打算在后面的代码中继续使用这个集合了。
+
+如果想要修改这个元素，则需要用`mut`关键字。
+```rust
+fn main() {
+    for i in 1..=5 {
+        println!("{}", i);
+    }
+}
+```
+
+
+| 使用方法	| 等价使用方式	| 所有权 |
+| --- | --- | ---|
+|for item in collection| for item in IntoIterator::into_iter(collection)|	转移所有权|
+|for item in &collection| for item in collection.iter() | 不可变借用|
+|for item in &mut collection| for item in collection.iter_mut() | 可变借用|
+###  5.2. <a name='-1'></a>题解：
+```rust
+// 填空
+fn main() {
+    let n = 5;
+
+    if n < 0 {
+        println!("{} is negative", n);
+    } else if n > 0 {
+        println!("{} is positive", n);
+    } else {
+        println!("{} is zero", n);
+    }
+} 
+
+// 修复错误
+// 似乎会要求if和else返回的东西是同一个类型。
+fn main() {
+    let n = 5;
+
+    let big_n =
+        if n < 10 && n > -10 {
+            println!(" 数字太小，先增加 10 倍再说");
+
+            10 * n
+        } else {
+            println!("数字太大，我们得让它减半");
+
+            n / 2
+        };
+
+    println!("{} -> {}", n, big_n);
+} 
+
+fn main() {
+    for n in 1..100 { // 修改此行，让代码工作
+        if n == 100 {
+            panic!("NEVER LET THIS RUN")
+        }
+    }
+} 
+
+// 修复错误，不要新增或删除代码行
+fn main() {
+    let names = [String::from("liming"),String::from("hanmeimei")];
+    for name in &names {
+        // do something with name...
+        println!("{}", name);
+    }
+
+    println!("{:?}", names);
+
+    let numbers = [1, 2, 3];
+    // numbers中的元素实现了 Copy，因此无需转移所有权
+    for n in &numbers {
+        // do something with name...
+        println!("{}", n);
+    }
+    
+    println!("{:?}", numbers);
+} 
+
+fn main() {
+    let a = [4,3,2,1];
+
+    // 通过索引和值的方式迭代数组 `a` 
+    for (i,v) in a.iter().enumerate() {
+        println!("第{}个元素是{}",i+1,v);
+    }
+}
+
+// 填空，让最后一行的  println! 工作 !
+fn main() {
+    // 一个计数值
+    let mut n = 1;
+
+    // 当条件为真时，不停的循环
+    while n < 10 {
+        if n % 15 == 0 {
+            println!("fizzbuzz");
+        } else if n % 3 == 0 {
+            println!("fizz");
+        } else if n % 5 == 0 {
+            println!("buzz");
+        } else {
+            println!("{}", n);
+        }
+
+
+        n = n + 1;
+    }
+
+    println!("n 的值是 {}, 循环结束",n);
+}
+
+// 填空，不要修改其它代码
+fn main() {
+    let mut n = 0;
+    for i in 0..=100 {
+       if n == 66 {
+           break;
+       }
+       n += 1;
+    }
+
+    assert_eq!(n, 66);
+}
+
+// 填空，不要修改其它代码
+fn main() {
+    let mut n = 0;
+    for i in 0..=100 {
+       if n != 66 {
+           n += 1;
+           continue;
+       }
+       
+       break;
+    }
+
+    assert_eq!(n, 66);
+}
+
+// 填空，不要修改其它代码
+fn main() {
+    let mut count = 0u32;
+
+    println!("Let's count until infinity!");
+
+    // 无限循环
+    loop {
+        count += 1;
+
+        if count == 3 {
+            println!("three");
+
+            // 跳过当此循环的剩余代码
+            continue;
+        }
+
+        println!("{}", count);
+
+        if count == 5 {
+            println!("OK, that's enough");
+
+            break;;
+        }
+    }
+
+    assert_eq!(count, 5);
+}
+
+// 填空
+// loop也是表达式，因此其也可以用于返回counter。
+fn main() {
+    let mut counter = 0;
+
+    let result = loop {
+        counter += 1;
+
+        if counter == 10 {
+            break counter * 2;
+        }
+    };
+
+    assert_eq!(result, 20);
+}
+
+// 填空
+// 可以通过设置`label标签的方式实现continue和break对于外层循环控制流的操纵。
+// 似乎更加灵活了，但对编译器的要求似乎很高。
+fn main() {
+    let mut count = 0;
+    'outer: loop {
+        'inner1: loop {
+            if count >= 20 {
+                // 这只会跳出 inner1 循环
+                break 'inner1; // 这里使用 `break` 也是一样的
+            }
+            count += 2;
+        }
+
+        count += 5;
+
+        'inner2: loop {
+            if count >= 30 {
+                break 'outer;
+            }
+
+            continue 'outer;
+        }
+    }
+
+    assert!(count == 30)
+}
+
+```
+##  6. <a name='-1'></a>模式匹配
+似乎在函数式编程中用的比较多。
+###  6.1. <a name='matchiflet'></a>match和if let
+####  6.1.1. <a name='-1'></a>零碎知识点
+```rust
+enum Direction {
+    East,
+    West,
+    North,
+    South,
+}
+
+fn main() {
+    let dire = Direction::South;
+    match dire {
+        Direction::East => println!("East"),
+        Direction::North | Direction::South => /*这个|表示或者*/{
+            println!("South or North");
+        },
+        _ => println!("West"),
+    };
+}
+```
+match的匹配需要穷举出全部可能，并且每个分支都必须是一个表达式，且所有的分支最终返回值的类型必须相同。
+
+就功能上来看，match有点像switch case，不过性能上有很大的区别。
+
+match本身也是一个表达式，因此可以用其来进行赋值操作。
+
+match也可以解构枚举类型变量值。
+```rust
+enum Action {
+    Say(String),
+    MoveTo(i32, i32),
+    ChangeColorRGB(u16, u16, u16),
+}
+
+fn main() {
+    let actions = [
+        Action::Say("Hello Rust".to_string()),
+        Action::MoveTo(1,2),
+        Action::ChangeColorRGB(255,255,0),
+    ];
+    for action in actions {
+        match action {
+            Action::Say(s) => {
+                println!("{}", s);
+            },
+            Action::MoveTo(x, y) => {
+                println!("point from (0, 0) move to ({}, {})", x, y);
+            },
+            Action::ChangeColorRGB(r, g, _) => {
+                println!("change color into '(r:{}, g:{}, b:0)', 'b' has been ignored",
+                    r, g,
+                );
+            }
+        }
+    }
+}
+```
+Rust的编译器能够清楚知道哪些分支。
+
+如果仅需要知道对一个模式进行匹配，可以直接用
+```rust
+if let Some(3) = v {
+    println!("three");
+}
+```
+####  6.1.2. <a name='-1'></a>题解
+```rust
+// 填空
+enum Direction {
+    East,
+    West,
+    North,
+    South,
+}
+
+fn main() {
+    let dire = Direction::South;
+    match dire {
+        Direction::East => println!("East"),
+        Direction::South | Direction::North  => { // 在这里匹配 South 或 North
+            println!("South or North");
+        },
+        _ => println!("West"),
+    };
+}
+
+fn main() {
+    let boolean = true;
+
+    // 使用 match 表达式填空，并满足以下条件
+    //
+    // boolean = true => binary = 1
+    // boolean = false => binary = 0
+    
+    let binary = match boolean {
+        true => 1,
+        false => 0,
+    };
+
+    assert_eq!(binary, 1);
+}
+
+
+// 填空
+enum Message {
+    Quit,
+    Move { x: i32, y: i32 },
+    Write(String),
+    ChangeColor(i32, i32, i32),
+}
+
+fn main() {
+    let msgs = [
+        Message::Quit,
+        Message::Move{x:1, y:3},
+        Message::ChangeColor(255,255,0)
+    ];
+
+    for msg in msgs {
+        show_message(msg)
+    }
+} 
+
+fn show_message(msg: Message) {
+    match msg {
+        Message::Move{x: a, y: b} => { // 这里匹配 Message::Move
+            assert_eq!(a, 1);
+            assert_eq!(b, 3);
+        },
+        Message::ChangeColor(r, g, b) => {
+            assert_eq!(g, 255);
+            assert_eq!(b, 0);
+        },
+        _ => println!("no data in these variants")
+    }
+}
+
+fn main() {
+    let alphabets = ['a', 'E', 'Z', '0', 'x', '9' , 'Y'];
+
+    // 使用 `matches` 填空
+    assert!(matches!('a', alphabets));
+} 
+
+enum MyEnum {
+    Foo,
+    Bar
+}
+
+fn main() {
+    let mut count = 0;
+
+    let v = vec![MyEnum::Foo,MyEnum::Bar,MyEnum::Foo];
+    for e in v {
+        if matches!(e, MyEnum::Foo) { // 修复错误，只能修改本行代码
+            count += 1;
+        }
+    }
+
+    assert_eq!(count, 2);
+}
+
+fn main() {
+    let o = Some(7);
+
+    // 移除整个 `match` 语句块，使用 `if let` 替代
+    if let Some(i) = o {
+        println!("This is a really long string and `{:?}`", i);
+    };
+}
+
+// 填空
+enum Foo {
+    Bar(u8)
+}
+
+fn main() {
+    let a = Foo::Bar(1);
+
+    if let Foo::Bar(i) = a {
+        println!("foobar 持有的值是: {}", i);
+    }
+}
+
+enum Foo {
+    Bar,
+    Baz,
+    Qux(u32)
+}
+
+fn main() {
+    let a = Foo::Qux(10);
+
+    // 移除以下代码，使用 `match` 代替
+    match a {
+        Foo::Bar => println!("match foo::bar"),
+        Foo::Baz => println!("match foo::baz"),
+        _ => println!("match others"),
+    };
+
+}
+
+// 就地修复错误
+fn main() {
+    let age = Some(30);
+    if let Some(age) = age { // 创建一个新的变量，该变量与之前的 `age` 变量同名
+       assert_eq!(age, 30);
+    } // 新的 `age` 变量在这里超出作用域
+    
+    match age {
+        // `match` 也能实现变量遮蔽
+        Some(age) =>  println!("age 是一个新的变量，它的值是 {}", age),
+        _ => ()
+    }
+ }
+```
+###  6.2. <a name='-1'></a>模式适用场景
+####  6.2.1. <a name='-1'></a>零碎知识点
+while let条件循环：
+```rust
+// Vec是动态数组
+let mut stack = Vec::new();
+
+// 向数组尾部插入元素
+stack.push(1);
+stack.push(2);
+stack.push(3);
+
+// stack.pop从数组尾部弹出元素
+while let Some(top) = stack.pop() {
+    println!("{}", top);
+}
+```
+在stack动态数组内尚有元素的时候，就会不停弹出。主要是查看`stack.pop()`是否与`Some(top)`解构匹配来确定是否继续做下去。
+
+```rust
+let Some(x) = some_option_value;//漏掉了对于None情况的匹配。
+```
+###  6.3. <a name='-1'></a>全模式列表
+####  6.3.1. <a name='-1'></a>零碎知识点
+```rust
+// 匹配也可以是用序列来做。
+let x = 'c';
+
+match x {
+    'a'..='j' => println!("early ASCII letter"),
+    'k'..='z' => println!("late ASCII letter"),
+    _ => println!("something else"),
+}
+// 结构体的解构
+struct Point {
+    x: i32,
+    y: i32,
+}
+
+fn main() {
+    let p = Point { x: 0, y: 7 };
+
+    let Point { x: a, y: b } = p;
+    assert_eq!(0, a);
+    assert_eq!(7, b);
+}
+
+// 解构也可以做一部分的解构，这样便于筛查情况。
+fn main() {
+    let p = Point { x: 0, y: 7 };
+
+    match p {
+        Point { x, y: 0 } => println!("On the x axis at {}", x),
+        Point { x: 0, y } => println!("On the y axis at {}", y),
+        Point { x, y } => println!("On neither axis: ({}, {})", x, y),
+    }
+}
+// 不定长数组的解构，特别注意以[x, ..]和[.., y]的匹配模式。
+let arr: &[u16] = &[114, 514];
+
+if let [x, ..] = arr {
+    assert_eq!(x, &114);
+}
+
+if let &[.., y] = arr {
+    assert_eq!(y, 514);
+}
+
+let arr: &[u16] = &[];
+
+assert!(matches!(arr, [..]));
+assert!(!matches!(arr, [x, ..]));
+```
+在通过模式匹配利用`_`匹配数据，并不会出现所有权的转移。但是`_s`这样就会。
+
+利用`..`可以忽略剩余值，会忽略剩余的任何没有显式匹配的值部分。但这个字符的使用需要做到无歧义。
+
+匹配守卫是一个位于`match`分支模式之后的额外`if`条件，它能为分支模式提供进一步的匹配条件。匹配守卫的条件可以作用于用或链接指定的多个模式。
+```rust
+let num = Some(4);
+
+match num {
+    Some(x) if x < 5 => println!("less than five: {}", x),
+    Some(x) => println!("{}", x),
+    None => (),
+}
+```
+`@`可以为一个字段绑定另外一个变量，也可以用于目标的解构。做绑定时如果有或的情况，需要用`()`框起来，当然，这是较为新版的Rust特性。
+```rust
+match msg {
+    Message::Hello { id: id_variable @ 3..=7 } => {
+        println!("Found an id in range: {}", id_variable)
+    },
+    Message::Hello { id: 10..=12 } => {
+        println!("Found an id in another range")
+    },
+    Message::Hello { id } => {
+        println!("Found some other id: {}", id)
+    },
+}
+
+#[derive(Debug)]
+struct Point {
+    x: i32,
+    y: i32,
+}
+
+fn main() {
+    // 绑定新变量 `p`，同时对 `Point` 进行解构
+    let p @ Point {x: px, y: py } = Point {x: 10, y: 23};
+    println!("x: {}, y: {}", px, py);
+    println!("{:?}", p);
+
+
+    let point = Point {x: 10, y: 5};
+    if let p @ Point {x: 10, y} = point {
+        println!("x is 10 and y is {} in {:?}", y, p);
+    } else {
+        println!("x was not 10 :(");
+    }
+}
 ```
