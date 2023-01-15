@@ -2461,3 +2461,437 @@ fn main() {
 }
 
 ```
+## Method方法
+### 零碎知识点
+Rust利用`impl`来定义方法。
+```rust
+struct Circle {
+    x: f64,
+    y: f64,
+    radius: f64,
+}
+
+impl Circle {
+    // new是Circle的关联函数，因为它的第一个参数不是self，且new并不是关键字
+    // 这种方法往往用于初始化当前结构体的实例
+    fn new(x: f64, y: f64, radius: f64) -> Circle {
+        Circle {
+            x: x,
+            y: y,
+            radius: radius,
+        }
+    }
+
+    // Circle的方法，&self表示借用当前的Circle结构体
+    fn area(&self) -> f64 {
+        std::f64::consts::PI * (self.radius * self.radius)
+    }
+}
+```
+既然已经开始玩面向对象了，我们就要把`self`相关的东西说的更加明确一些。`Self`指代被实现方法的结构体类型，`self`一般表示的是该类型的实例。
+
+`self: &Self`等价于`&self`。
+
+`self`表示所有权转移到方法内的操作，`&self`表示对该结构体的不可变借用，`&mut self`表示可变借用。
+
+在仅仅给出接收者和方法名的前提下，Rust可以明确地计算出方法是仅仅读取&self，做出修改，或者是获取所有权。这一步利用编译器做好了：Rust有一个自动引用和解引用的功能。
+### 题解：
+```rust
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+impl Rectangle {
+    // 完成 area 方法，返回矩形 Rectangle 的面积
+    fn area(&self) -> u32 {
+        self.width * self.height
+    }
+}
+
+fn main() {
+    let rect1 = Rectangle { width: 30, height: 50 };
+
+    assert_eq!(rect1.area(), 1500);
+}
+
+// 只填空，不要删除任何代码行!
+#[derive(Debug)]
+struct TrafficLight {
+    color: String,
+}
+
+impl TrafficLight {
+    pub fn show_state(&self)  {
+        println!("the current state is {}", self.color);
+    }
+}
+fn main() {
+    let light = TrafficLight{
+        color: "red".to_owned(),
+    };
+    // 不要拿走 `light` 的所有权
+    light.show_state();
+    // 否则下面代码会报错
+    println!("{:?}", light);
+}
+
+struct TrafficLight {
+    color: String,
+}
+
+impl TrafficLight {
+    // 使用 `Self` 填空
+    pub fn show_state(self: &Self)  {
+        println!("the current state is {}", self.color);
+    }
+
+    // 填空，不要使用 `Self` 或其变体
+    pub fn change_state(&mut self) {
+        self.color = "green".to_string()
+    }
+}
+fn main() {}
+
+#[derive(Debug)]
+struct TrafficLight {
+    color: String,
+}
+
+impl TrafficLight {
+    // 1. 实现下面的关联函数 `new`,
+    // 2. 该函数返回一个 TrafficLight 实例，包含 `color` "red"
+    // 3. 该函数必须使用 `Self` 作为类型，不能在签名或者函数体中使用 `TrafficLight`
+    pub fn new() -> Self {
+        Self {color: "red".to_string()}
+    } 
+
+    pub fn get_state(&self) -> &str {
+        &self.color
+    }
+}
+
+fn main() {
+    let light = TrafficLight::new();
+    assert_eq!(light.get_state(), "red");
+}
+
+
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+// 使用多个 `impl` 语句块重写下面的代码
+impl Rectangle {
+    fn area(&self) -> u32 {
+        self.width * self.height
+    }
+}
+
+impl Rectangle {
+    fn can_hold(&self, other: &Rectangle) -> bool {
+        self.width > other.width && self.height > other.height
+    }
+}
+
+
+fn main() {}
+
+
+#[derive(Debug)]
+enum TrafficLightColor {
+    Red,
+    Yellow,
+    Green,
+}
+
+// 为 TrafficLightColor 实现所需的方法
+impl TrafficLightColor {
+    pub fn color(&self) -> String {
+        match self/* *self */ {
+            TrafficLightColor::Yellow => "yellow".to_string(),
+            TrafficLightColor::Red => "red".to_string(),
+            TrafficLightColor::Green => "green".to_string(),
+        }
+    }
+}
+
+fn main() {
+    let c = TrafficLightColor::Yellow;
+
+    assert_eq!(c.color(), "yellow");
+
+    println!("{:?}",c);
+}
+
+```
+## 泛型：
+### 泛型Generics:
+#### 零碎知识点：
+枚举中使用泛型的卧龙凤雏。
+```rust
+enum Option<T> {
+    Some(T),
+    None,
+}
+enum Result<T, E> {
+    Ok(T),
+    Err(E),
+}
+```
+除了结构体内的泛型参数，方法中也可以定义额外的泛型参数。
+
+感觉真的很像很像Java。
+```rust
+struct Point<T, U> {
+    x: T,
+    y: U,
+}
+
+impl<T, U> Point<T, U> {
+    fn mixup<V, W>(self, other: Point<V, W>) -> Point<T, W> {
+        Point {
+            x: self.x,
+            y: other.y,
+        }
+    }
+}
+
+fn main() {
+    let p1 = Point { x: 5, y: 10.4 };
+    let p2 = Point { x: "Hello", y: 'c'};
+
+    let p3 = p1.mixup(p2);
+
+    println!("p3.x = {}, p3.y = {}", p3.x, p3.y);
+}
+```
+## 集合类型
+### Vector
+#### 零碎知识点
+动态数组Vector只能用来存储相同类型的元素。
+```rust
+let v: Vec<i32> = Vec::new(); // 初始化一个Vector
+
+// Vector内读取元素方法如下
+let v = vec![1, 2, 3, 4, 5];
+
+let third: &i32 = &v[2];
+println!("第三个元素是 {}", third);
+
+match v.get(2) {
+    Some(third) => println!("第三个元素是 {}", third),
+    None => println!("去你的第三个元素，根本没有！"),
+}
+
+// Rust 习惯培养。可变与不可变不可同时使用，具体来说编译器面对可变情况会新开一块儿地来复制，以此来判错。
+let mut v = vec![1, 2, 3, 4, 5];
+
+let first = &v[0];
+
+v.push(6);
+
+println!("The first element is: {}", first);
+```
+#### 题解：
+```rust
+fn main() {
+    let arr: [u8; 3] = [1, 2, 3];
+    
+    let v = Vec::from(arr);
+    is_vec(&v);
+
+    let v = vec![1, 2, 3];
+    is_vec(&v);
+
+    // vec!(..) 和 vec![..] 是同样的宏，宏可以使用 []、()、{}三种形式，因此...
+    let v = vec!(1, 2, 3);
+    is_vec(&v);
+    
+    // ...在下面的代码中, v 是 Vec<[u8; 3]> , 而不是 Vec<u8>
+    // 使用 Vec::new 和 `for` 来重写下面这段代码
+    let mut v1 = Vec::new();
+    for v_element in &v {
+        v1.push(*v_element);
+    }
+    is_vec(&v1);
+ 
+    assert_eq!(v, v1);
+
+    println!("Success!")
+}
+
+fn is_vec(v: &Vec<u8>) {}
+
+// 填空
+fn main() {
+    let mut v1 = Vec::from([1, 2, 4]);
+    v1.pop();
+    v1.push(3);
+    
+    let mut v2 = Vec::new();
+    v2.extend_from_slice(&[1, 2, 3]);
+
+    assert_eq!(v1, v2);
+
+    println!("Success!")
+}
+
+// 填空
+fn main() {
+    // array -> Vec
+    // impl From<[T; N]> for Vec
+    let arr = [1, 2, 3];
+    let v1 = Vec::from(arr);
+    let v2: Vec<i32> = arr.to_vec();
+ 
+    assert_eq!(v1, v2);
+ 
+    
+    // String -> Vec
+    // impl From<String> for Vec
+    let s = "hello".to_string();
+    let v1: Vec<u8> = s.into_bytes();
+
+    let s = "hello".to_string();
+    let v2 = s.into_bytes();
+    assert_eq!(v1, v2);
+
+    // impl<'_> From<&'_ str> for Vec
+    let s = "hello";
+    let v3 = Vec::from(s);
+    assert_eq!(v2, v3);
+
+    // 迭代器 Iterators 可以通过 collect 变成 Vec
+    let v4: Vec<i32> = [0; 10].into_iter().collect();
+    assert_eq!(v4, vec![0; 10]);
+
+    println!("Success!")
+ }
+
+// 修复错误并实现缺失的代码
+fn main() {
+    let mut v = Vec::from([1, 2, 3]);
+    for i in 0..5 {
+        println!("{:?}", v.get(i));
+    }
+
+    for i in 0..5 {
+       // 实现这里的代码...
+       if let Some(x) = v.get(i) {
+           v[i] = x + 1
+       } else {
+           v.push(i + 2)
+       }
+    }
+    assert_eq!(v, vec![2, 3, 4, 5, 6]);
+
+    println!("Success!")
+}
+
+// 修复错误
+fn main() {
+    let mut v = vec![1, 2, 3];
+
+    let slice1 = &v[..];
+    // 越界访问将导致 panic.
+    // 修改时必须使用 `v.len`
+    let slice2 = &v[0..v.len()];
+    
+    assert_eq!(slice1, slice2);
+    
+    // 切片是只读的
+    // 注意：切片和 `&Vec` 是不同的类型，后者仅仅是 `Vec` 的引用，并可以通过解引用直接获取 `Vec`
+    let vec_ref: &mut Vec<i32> = &mut v;
+    vec_ref.push(4);
+    // let _slice3 = &mut v[0..3]; 与此同时似乎这里出现了两个可变引用。
+    // slice3.push(4);
+
+    assert_eq!(vec_ref, &[1, 2, 3, 4]);
+
+    println!("Success!")
+}
+
+// 修复错误
+fn main() {
+    let mut vec = Vec::with_capacity(10);
+
+    assert_eq!(vec.len(), 0);
+    assert_eq!(vec.capacity(), 10);
+
+    // 由于提前设置了足够的容量，这里的循环不会造成任何内存分配...
+    for i in 0..10 {
+        vec.push(i);
+    }
+    assert_eq!(vec.len(), 10);
+    assert_eq!(vec.capacity(), 10);
+
+    // ...但是下面的代码会造成新的内存分配
+    vec.push(11);
+    assert_eq!(vec.len(), 11);
+    assert!(vec.capacity() >= 11);
+
+
+    // 填写一个合适的值，在 `for` 循环运行的过程中，不会造成任何内存分配
+    let mut vec = Vec::with_capacity(128);
+    for i in 0..100 {
+        vec.push(i);
+    }
+
+    assert_eq!(vec.len(), 100);
+    assert_eq!(vec.capacity(), 128);
+    
+    println!("Success!")
+}
+
+#[derive(Debug, PartialEq)] // PartialEq居然可以这么用，不过正常手段需要用match，并且还要用一点特殊字段用来分辨之。
+enum IpAddr {
+    V4(String),
+    V6(String),
+}
+
+fn main() {
+    // 填空
+    let v : Vec<IpAddr> =  vec![
+        IpAddr::V4("127.0.0.1".to_string()),
+        IpAddr::V6("::1".to_string())
+    ];
+    
+    // 枚举的比较需要派生 PartialEq 特征
+    assert_eq!(v[0], IpAddr::V4("127.0.0.1".to_string()));
+    assert_eq!(v[1], IpAddr::V6("::1".to_string()));
+
+    println!("Success!")
+}
+
+trait IpAddr {
+    fn display(&self);
+}
+
+struct V4(String);
+impl IpAddr for V4 {
+    fn display(&self) {
+        println!("ipv4: {:?}",self.0)
+    }
+}
+struct V6(String);
+impl IpAddr for V6 {
+    fn display(&self) {
+        println!("ipv6: {:?}",self.0)
+    }
+}
+
+fn main() {
+    // 填空，这里的Dyn字段之后再去了解。
+    let v: Vec<Box<dyn IpAddr>> = vec![
+        Box::new(V4("127.0.0.1".to_string())),
+        Box::new(V6("::1".to_string())),
+    ];
+
+    for ip in v {
+        ip.display();
+    }
+}
+
+```
