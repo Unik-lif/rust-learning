@@ -2895,3 +2895,215 @@ fn main() {
 }
 
 ```
+### HashMap:
+#### 零碎知识点：
+HashMap默认类型：`HashMap<&str, i32>`，该类型需要通过`use std::collections::HashMap`调入，才可以在程序中使用。
+```rust
+fn main() {
+    use std::collections::HashMap;
+
+    let teams_list = vec![
+        ("中国队".to_string(), 100),
+        ("美国队".to_string(), 10),
+        ("日本队".to_string(), 50),
+    ];
+
+    let teams_map: HashMap<_,_> = teams_list.into_iter().collect(); // 通过<,>让编译器自行去匹配类型。
+
+    println!("{:?}",teams_map)
+}
+```
+对于HashMap的访问，采用`get`函数时，返回的值是`Some(&T)`，使用借用的原因是防止所有权的转移。
+
+HashMap 默认使用 SipHash 1-3 哈希算法，该算法对于抵抗 HashDos 攻击非常有效。
+
+#### 题解：
+```rust
+
+// 填空并修复错误
+use std::collections::HashMap;
+fn main() {
+    let mut scores = HashMap::new();
+    scores.insert("Sunface", 98);
+    scores.insert("Daniel", 95);
+    scores.insert("Ashley", 69);
+    scores.insert("Katie", 58);
+
+    // get 返回一个 Option<&V> 枚举值
+    let score = scores.get("Sunface");
+    assert_eq!(score, Some(&98));
+
+    if scores.contains_key("Daniel") {
+        // 索引返回一个值 V
+        let score = scores["Daniel"];
+        assert_eq!(score, 95);
+        scores.remove("Daniel");
+    }
+
+    assert_eq!(scores.len(), 3);
+
+    for (name, score) in scores {
+        println!("The score of {} is {}", name, score)
+    }
+}
+
+use std::collections::HashMap;
+fn main() {
+    let teams = [
+        ("Chinese Team", 100),
+        ("American Team", 10),
+        ("France Team", 50),
+    ];
+
+    let mut teams_map1 = HashMap::new();
+    for team in &teams {
+        teams_map1.insert(team.0, team.1);
+    }
+
+    // 使用两种方法实现 team_map2
+    // 提示:其中一种方法是使用 `collect` 方法
+    let teams_map2: HashMap <_,_> = teams.into_iter().collect();
+
+    assert_eq!(teams_map1, teams_map2);
+
+    println!("Success!")
+}
+
+// 填空
+use std::collections::HashMap;
+fn main() {
+    // 编译器可以根据后续的使用情况帮我自动推断出 HashMap 的类型，当然你也可以显式地标注类型：HashMap<&str, u8>
+    let mut player_stats = HashMap::new();
+
+    // 查询指定的 key, 若不存在时，则插入新的 kv 值
+    player_stats.entry("health").or_insert(100);
+
+    assert_eq!(player_stats["health"], 100);
+
+    // 通过函数来返回新的值
+    player_stats.entry("health").or_insert_with(random_stat_buff);
+    assert_eq!(player_stats["health"], 100);
+
+    let health = player_stats.entry("health").or_insert(50);
+    assert_eq!(*health, 100);
+    *health -= 50;
+    assert_eq!(*health, 50);
+
+    println!("Success!")
+}
+
+fn random_stat_buff() -> u8 {
+    // 为了简单，我们没有使用随机，而是返回一个固定的值
+    42
+}
+
+// 修复错误
+// 提示: `derive` 是实现一些常用特征的好办法
+use std::collections::HashMap;
+
+#[derive(PartialEq, Eq, Hash, Debug)]
+struct Viking {
+    name: String,
+    country: String,
+}
+
+impl Viking {
+    fn new(name: &str, country: &str) -> Viking {
+        Viking {
+            name: name.to_string(),
+            country: country.to_string(),
+        }
+    }
+}
+
+fn main() {
+    // 使用 HashMap 来存储 viking 的生命值
+    let vikings = HashMap::from([
+        (Viking::new("Einar", "Norway"), 25),
+        (Viking::new("Olaf", "Denmark"), 24),
+        (Viking::new("Harald", "Iceland"), 12),
+    ]);
+
+    // 使用 derive 的方式来打印 viking 的当前状态
+    for (viking, health) in &vikings {
+        println!("{:?} has {} hp", viking, health);
+    }
+}
+
+// 修复错误
+// 提示: `derive` 是实现一些常用特征的好办法
+use std::collections::HashMap;
+
+#[derive(PartialEq, Eq, Hash, Debug)]
+struct Viking {
+    name: String,
+    country: String,
+}
+
+impl Viking {
+    fn new(name: &str, country: &str) -> Viking {
+        Viking {
+            name: name.to_string(),
+            country: country.to_string(),
+        }
+    }
+}
+
+fn main() {
+    // 使用 HashMap 来存储 viking 的生命值
+    let vikings = HashMap::from([
+        (Viking::new("Einar", "Norway"), 25),
+        (Viking::new("Olaf", "Denmark"), 24),
+        (Viking::new("Harald", "Iceland"), 12),
+    ]);
+
+    // 使用 derive 的方式来打印 viking 的当前状态
+    for (viking, health) in &vikings {
+        println!("{:?} has {} hp", viking, health);
+    }
+}
+
+```
+## 包和模块：
+### Crate：
+#### 题解：
+```
+cargo new hello-package 
+
+cargo new hello-package1 --lib 
+```
+### Module
+#### 题解：
+对应的多模块例子特别好。
+### use导入模块
+#### 题解：
+```rust
+use std::fmt::Result as fmtresult;
+use std::io::Result as ioresult;
+
+fn main() {}
+
+// 使用两种方式填空
+// 不要添加新的代码行
+use std::collections::*;
+
+fn main() {
+    let _c1:HashMap<&str, i32> = HashMap::new();
+    let mut c2 = BTreeMap::new();
+    c2.insert(1, "a");
+    let _c3: HashSet<i32> = HashSet::new();
+}
+
+// 使用两种方式填空
+// 不要添加新的代码行
+use std::collections::{HashMap, BTreeMap, HashSet};
+
+fn main() {
+    let _c1:HashMap<&str, i32> = HashMap::new();
+    let mut c2 = BTreeMap::new();
+    c2.insert(1, "a");
+    let _c3: HashSet<i32> = HashSet::new();
+}
+
+
+```
