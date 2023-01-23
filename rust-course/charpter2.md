@@ -2667,6 +2667,526 @@ fn main() {
     println!("p3.x = {}, p3.y = {}", p3.x, p3.y);
 }
 ```
+#### 有趣的题解：
+```rust
+// 填空
+struct A;          // 具体的类型 `A`.
+struct S(A);       // 具体的类型 `S`.
+struct SGen<T>(T); // 泛型 `SGen`.
+
+fn reg_fn(_s: S) {}
+
+fn gen_spec_t(_s: SGen<A>) {}
+
+fn gen_spec_i32(_s: SGen<i32>) {}
+
+fn generic<T>(_s: SGen<T>) {}
+
+fn main() {
+    // 使用非泛型函数
+    reg_fn(S(A));          // 具体的类型
+    gen_spec_t(SGen(A));   // 隐式地指定类型参数  `A`.
+    gen_spec_i32(SGen(0)); // 隐式地指定类型参数`i32`.
+
+    // 显式地指定类型参数 `char`
+    generic::<char>(SGen('h'));
+
+    // 隐式地指定类型参数 `char`.
+    generic(SGen('h'));
+}
+
+// 实现下面的泛型函数 sum
+fn sum<T: std::ops::Add<Output = T>>(a:T, b:T) -> T {
+    a + b
+}
+
+fn main() {
+    assert_eq!(5, sum(2i8, 3i8));
+    assert_eq!(50, sum(20, 30));
+    assert_eq!(2.46, sum(1.23, 1.23));
+}
+
+// 实现一个结构体 Point 让代码工作
+
+struct Point<T> {
+    x: T,
+    y: T,
+}
+
+fn main() {
+    let integer = Point { x: 5, y: 10 };
+    let float = Point { x: 1.0, y: 4.0 };
+}
+
+// 修改以下结构体让代码工作
+struct Point<T, U> {
+    x: T,
+    y: U,
+}
+
+fn main() {
+    // 不要修改这行代码！
+    let p = Point{x: 5, y : "hello".to_string()};
+}
+
+// 为 Val 增加泛型参数，不要修改 `main` 中的代码
+struct Val<T> {
+    val: T
+}
+
+impl<T> Val<T> {
+    fn value(&self) -> &T {
+        &self.val
+    }
+}
+
+
+fn main() {
+    let x = Val{ val: 3.0 };
+    let y = Val{ val: "hello".to_string()};
+    println!("{}, {}", x.value(), y.value());
+}
+
+struct Point<T, U> {
+    x: T,
+    y: U,
+}
+
+impl<T, U> Point<T, U> {
+    // 实现 mixup，不要修改其它代码！
+    fn mixup<V, W>(self, other: Point<V, W>) -> Point<T, W> {
+        Point {
+            x: self.x,
+            y: other.y,
+        }
+    }
+}
+
+fn main() {
+    let p1 = Point { x: 5, y: 10 };
+    let p2 = Point { x: "Hello", y: '中'};
+
+    let p3 = p1.mixup(p2);
+
+    assert_eq!(p3.x, 5);
+    assert_eq!(p3.y, '中');
+}
+
+// 修复错误，让代码工作
+struct Point<T> {
+    x: T,
+    y: T,
+}
+
+impl Point<f32> {
+    fn distance_from_origin(&self) -> f32 {
+        (self.x.powi(2) + self.y.powi(2)).sqrt()
+    }
+}
+
+fn main() {
+    let p = Point{x: 5.0, y: 10.0};
+    println!("{}",p.distance_from_origin())
+}
+
+// 修复错误
+struct Array<T, const N: usize> {
+    data : [T; N]
+}
+
+fn main() {
+    let arrays = [
+        Array{
+            data: [1, 2, 3],
+        },
+        Array {
+            data: [1, 2, 3],
+        },
+        Array {
+            data: [1, 2, 4]
+        }
+    ];
+}
+
+// 填空
+fn print_array<T: std::fmt::Debug>(arr: &[T]) {
+    println!("{:?}", arr);
+}
+fn main() {
+    let arr = [1, 2, 3];
+    print_array(&arr);
+
+    let arr = ["hello", "world"];
+    print_array(&arr);
+}
+
+fn main() {
+    check_size([0u8; 767]); 
+    check_size([0i32; 191]);
+    check_size(["hello你好"; 47]); // &str is a string reference, containing a pointer and string length in it, so it takes two word long, in x86-64, 1 word = 8 bytes
+    check_size([(); 31].map(|_| "hello你好".to_string()));  // String is a smart pointer struct, it has three fields: pointer, length and capacity, each takes 8 bytes
+    check_size(['中'; 191]); // A char takes 4 bytes in Rust
+}
+```
+### 特征traits
+这一章的细节知识点比较多，但尚没达到需要梳理的程度。
+#### 题解
+```rust
+// 完成两个 `impl` 语句块
+// 不要修改 `main` 中的代码
+trait Hello {
+    fn say_hi(&self) -> String {
+        String::from("hi")
+    }
+
+    fn say_something(&self) -> String;
+}
+
+struct Student {}
+impl Hello for Student {
+    fn say_something(&self) -> String {
+        format!("I'm a good student")
+    }
+}
+struct Teacher {}
+impl Hello for Teacher {
+    fn say_hi(&self) -> String {
+        String::from("Hi, I'm your new teacher")
+    }
+
+    fn say_something(&self) -> String {
+        format!("I'm not a bad teacher")
+    }
+}
+
+fn main() {
+    let s = Student {};
+    assert_eq!(s.say_hi(), "hi");
+    assert_eq!(s.say_something(), "I'm a good student");
+
+    let t = Teacher {};
+    assert_eq!(t.say_hi(), "Hi, I'm your new teacher");
+    assert_eq!(t.say_something(), "I'm not a bad teacher");
+
+    println!("Success!")
+}
+
+// `Centimeters`, 一个元组结构体，可以被比较大小
+#[derive(PartialEq, PartialOrd)]
+struct Centimeters(f64);
+
+// `Inches`, 一个元组结构体可以被打印
+#[derive(Debug)]
+struct Inches(i32);
+
+impl Inches {
+    fn to_centimeters(&self) -> Centimeters {
+        let &Inches(inches) = self;
+
+        Centimeters(inches as f64 * 2.54)
+    }
+}
+
+// 添加一些属性让代码工作
+// 不要修改其它代码！
+#[derive(PartialEq, PartialOrd, Debug)]
+struct Seconds(i32);
+
+fn main() {
+    let _one_second = Seconds(1);
+
+    println!("One second looks like: {:?}", _one_second);
+    let _this_is_true = _one_second == _one_second;
+    let _this_is_true = _one_second > _one_second;
+
+    let foot = Inches(12);
+
+    println!("One foot equals {:?}", foot);
+
+    let meter = Centimeters(100.0);
+
+    let cmp =
+        if foot.to_centimeters() < meter {
+            "smaller"
+        } else {
+            "bigger"
+        };
+
+    println!("One foot is {} than one meter.", cmp);
+}
+
+use std::ops;
+use std::ops::Mul;
+// 实现 fn multiply 方法
+// 如上所述，`+` 需要 `T` 类型实现 `std::ops::Add` 特征
+// 那么, `*` 运算符需要实现什么特征呢? 你可以在这里找到答案: https://doc.rust-lang.org/core/ops/
+fn multiply<T: Mul<T, Output=T>>(a:T, b:T) -> T {
+    a * b
+}
+
+fn main() {
+    assert_eq!(6, multiply(2u8, 3u8));
+    assert_eq!(5.0, multiply(1.0, 5.0));
+
+    println!("Success!")
+}
+
+
+// 修复错误，不要修改 `main` 中的代码!
+use std::ops;
+
+struct Foo;
+struct Bar;
+
+#[derive(PartialEq, PartialOrd, Debug)]
+struct FooBar;
+
+#[derive(PartialEq, PartialOrd, Debug)]
+struct BarFoo;
+
+// 下面的代码实现了自定义类型的相加： Foo + Bar = FooBar
+impl ops::Add<Bar> for Foo {
+    type Output = FooBar;
+
+    fn add(self, _rhs: Bar) -> FooBar {
+        FooBar
+    }
+}
+
+impl ops::Sub<Foo> for Bar {
+    type Output = BarFoo;
+
+    fn sub(self, _rhs: Foo) -> BarFoo {
+        BarFoo
+    }
+}
+
+impl ops::Sub<Bar> for Foo {
+    type Output = BarFoo;
+
+    fn sub(self, _rhs: Bar) -> BarFoo {
+        BarFoo
+    }
+}
+
+fn main() {
+    // 不要修改下面代码
+    // 你需要为 FooBar 派生一些特征来让代码工作
+    assert_eq!(Foo + Bar, FooBar);
+    assert_eq!(Foo - Bar, BarFoo);
+
+    println!("Success!")
+}
+
+
+// 实现 `fn summary` 
+// 修复错误且不要移除任何代码行
+trait Summary {
+    fn summarize(&self) -> String;
+}
+
+#[derive(Debug)]
+struct Post {
+    title: String,
+    author: String,
+    content: String,
+}
+
+impl Summary for Post {
+    fn summarize(&self) -> String {
+        format!("The author of post {} is {}", self.title, self.author)
+    }
+}
+
+#[derive(Debug)]
+struct Weibo {
+    username: String,
+    content: String,
+}
+
+impl Summary for Weibo {
+    fn summarize(&self) -> String {
+        format!("{} published a weibo {}", self.username, self.content)
+    }
+}
+
+fn main() {
+    let post = Post {
+        title: "Popular Rust".to_string(),
+        author: "Sunface".to_string(),
+        content: "Rust is awesome!".to_string(),
+    };
+    let weibo = Weibo {
+        username: "sunface".to_string(),
+        content: "Weibo seems to be worse than Tweet".to_string(),
+    };
+
+    println!("{}", summary(&post));
+    summary(&weibo);
+
+    println!("{:?}", post);
+    println!("{:?}", weibo);
+}
+
+// 在下面实现 `fn summary` 函数
+fn summary(item: &impl Summary) -> String {
+    item.summarize()
+}
+
+
+struct Sheep {}
+struct Cow {}
+
+trait Animal {
+    fn noise(&self) -> String;
+}
+
+impl Animal for Sheep {
+    fn noise(&self) -> String {
+        "baaaaah!".to_string()
+    }
+}
+
+impl Animal for Cow {
+    fn noise(&self) -> String {
+        "moooooo!".to_string()
+    }
+}
+
+// 返回一个类型，该类型实现了 Animal 特征，但是我们并不能在编译期获知具体返回了哪个类型
+// 修复这里的错误，你可以使用虚假的随机，也可以使用特征对象
+fn random_animal(random_number: f64) -> impl Animal {
+    if random_number < 0.5 {
+        Sheep {}
+    } else {
+        Sheep {}
+    }
+}
+
+fn main() {
+    let random_number = 0.234;
+    let animal = random_animal(random_number);
+    println!("You've randomly chosen an animal, and it says {}", animal.noise());
+}
+
+// 修复代码中的错误
+struct Pair<T> {
+    x: T,
+    y: T,
+}
+
+impl<T> Pair<T> {
+    fn new(x: T, y: T) -> Self {
+        Self {
+            x,
+            y,
+        }
+    }
+}
+
+impl<T: std::fmt::Debug + PartialOrd> Pair<T> {
+    fn cmp_display(&self) {
+        if self.x >= self.y {
+            println!("The largest member is x = {:?}", self.x);
+        } else {
+            println!("The largest member is y = {:?}", self.y);
+        }
+    }
+}
+#[derive(Debug, PartialOrd, PartialEq)]
+struct Unit(i32);
+
+fn main() {
+    let pair = Pair{
+        x: Unit(1),
+        y: Unit(3)
+    };
+
+    pair.cmp_display();
+}
+
+
+// 填空
+fn example1() {
+    // `T: Trait` 是最常使用的方式
+    // `T: Fn(u32) -> u32` 说明 `T` 只能接收闭包类型的参数
+    struct Cacher<T: Fn(u32) -> u32> {
+        calculation: T,
+        value: Option<u32>,
+    }
+
+    impl<T: Fn(u32) -> u32> Cacher<T> {
+        fn new(calculation: T) -> Cacher<T> {
+            Cacher {
+                calculation,
+                value: None,
+            }
+        }
+
+        fn value(&mut self, arg: u32) -> u32 {
+            match self.value {
+                Some(v) => v,
+                None => {
+                    let v = (self.calculation)(arg);
+                    self.value = Some(v);
+                    v
+                },
+            }
+        }
+    }
+
+    let mut cacher = Cacher::new(|x| x+1);
+    assert_eq!(cacher.value(10), 11);
+    assert_eq!(cacher.value(15), 11);
+}
+
+
+fn example2() {
+    // 还可以使用 `where` 来约束 T
+    struct Cacher<T>
+        where T: Fn(u32) -> u32, // 告知T的类型可以是什么
+    {
+        calculation: T,
+        value: Option<u32>,
+    }
+
+    impl<T> Cacher<T>
+        where T: Fn(u32) -> u32,
+    {
+        fn new(calculation: T) -> Cacher<T> {
+            Cacher {
+                calculation,
+                value: None,
+            }
+        }
+
+        fn value(&mut self, arg: u32) -> u32 {
+            match self.value {
+                Some(v) => v,
+                None => {
+                    let v = (self.calculation)(arg);
+                    self.value = Some(v);
+                    v
+                },
+            }
+        }
+    }
+
+    let mut cacher = Cacher::new(|x| x+1);
+    assert_eq!(cacher.value(20), 21);
+    assert_eq!(cacher.value(25), 21);
+}
+
+
+
+fn main() {
+    example1();
+    example2();
+
+    println!("Success!")
+}
+```
+
 ## 集合类型
 ### Vector
 #### 零碎知识点
@@ -3062,6 +3582,160 @@ fn main() {
         println!("{:?} has {} hp", viking, health);
     }
 }
+
+```
+## 返回值域错误处理
+Rust对于错误处理，分为两类：
+1. 可恢复错误
+2. 不可恢复错误
+
+
+### Panic
+#### 题解：
+```rust
+// 填空
+fn drink(beverage: &str) {
+    if beverage == "lemonade" {
+        println!("Success!");
+        // 实现下面的代码
+        panic!("holly shit");
+     }
+
+    println!("Exercise Failed if printing out this line!");
+}
+
+fn main() {
+    drink("lemonade");
+
+    println!("Exercise Failed if printing out this line!");
+}
+// 修复所有的 panic，让代码工作
+fn main() {
+    assert_eq!("abc".as_bytes(), [97, 98, 99]);
+
+    let v = vec![1, 2, 3];
+    let _ele = v[2];
+    let _ele = v.get(2).unwrap();
+
+    // 大部分时候编译器是可以帮我们提前发现溢出错误，并阻止编译通过。但是也有一些时候，这种溢出问题直到运行期才会出现
+    let _v = production_rate_per_hour(2);
+
+    divide(15, 1);
+
+    println!("Success!")
+}
+
+fn divide(x:u8, y:u8) {
+    println!("{}", x / y)
+}
+
+fn production_rate_per_hour(speed: u8) -> f64 {
+    let cph: u64 = 221 as u64;
+    match speed {
+        1..=4 => ((speed as u64) * cph) as f64,
+        5..=8 => ((speed as u64) * cph) as f64 * 0.9,
+        9..=10 => ((speed as u64) * cph) as f64 * 0.77,
+        _ => 0 as f64,
+    }
+}
+
+pub fn working_items_per_minute(speed: u8) -> u32 {
+    (production_rate_per_hour(speed) / 60 as f64) as u32
+}
+
+// RUST_BACKTRACE=1
+``` 
+### 返回值和Result
+在部分情况下，需要对错误有一些温和的处理方式：
+```rust
+enum Result<T, E> {
+    Ok(T),
+    Err(E),
+}
+```
+举个例子：
+```rust
+use std::fs::File;
+
+fn main() {
+    let f = File::open("hello.txt");
+}
+```
+返回的`f`是`Result<std::fs::File,std::io::Error>`，之后利用模式匹配来做就可以了。
+### result 与 ? 处理错误
+```rust
+// 填空并修复错误
+use std::num::ParseIntError;
+
+fn multiply(n1_str: &str, n2_str: &str) -> i32 {
+    let n1 = n1_str.parse::<i32>();
+    let n2 = n2_str.parse::<i32>();
+    let a = match n1 {
+        Ok(n1) => n1,
+        Err(e) => 4
+    };
+    let b = match n2 {
+        Ok(n2) => n2,
+        Err(e) => 4
+    };
+    a * b
+}
+
+fn main() {
+    let result = multiply("10", "2");
+    assert_eq!(result, 20);
+
+    let result = multiply("t", "2");
+    assert_eq!(result, 8);
+
+    println!("Success!")
+}
+
+use std::num::ParseIntError;
+
+// 使用 `?` 来实现 multiply
+// 不要使用 unwrap !
+fn multiply(n1_str: &str, n2_str: &str) -> Result<i32, ParseIntError> {
+    Ok(n1_str.parse::<i32>()? * n2_str.parse::<i32>()?)
+}
+
+fn main() {
+    assert_eq!(multiply("3", "4").unwrap(), 12);
+    println!("Success!")
+}
+
+use std::fs::File;
+use std::io::{self, Read};
+
+fn read_file1() -> Result<String, io::Error> {
+    let f = File::open("hello.txt");
+    let mut f = match f {
+        Ok(file) => file,
+        Err(e) => return Err(e),
+    };
+
+    let mut s = String::new();
+    match f.read_to_string(&mut s) {
+        Ok(_) => Ok(s),
+        Err(e) => Err(e),
+    }
+}
+
+// 填空
+// 不要修改其它代码
+fn read_file2() -> Result<String, io::Error> {
+    let mut s = String::new();
+
+    File::open("hello.txt")?.read_to_string(&mut s)?;
+
+    Ok(s)
+}
+
+fn main() {
+    assert_eq!(read_file1().unwrap_err().to_string(), read_file2().unwrap_err().to_string());
+    println!("Success!")
+}
+
 
 ```
 ## 包和模块：
