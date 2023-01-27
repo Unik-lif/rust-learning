@@ -36,3 +36,85 @@ fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {
 3. 若存在多个输入生命周期，且其中一个是 &self 或 &mut self，则 &self 的生命周期被赋给所有的输出生命周期
 
 拥有 &self 形式的参数，说明该函数是一个 方法，该规则让方法的使用便利度大幅提升。
+## 迭代器
+函数式编程中的一个很重要的组成部分，其中的next方法在python中也有较多的使用。
+```rust
+fn main() {
+    let arr = [1, 2, 3];
+    let mut arr_iter = arr.into_iter();
+
+    assert_eq!(arr_iter.next(), Some(1));
+    assert_eq!(arr_iter.next(), Some(2));
+    assert_eq!(arr_iter.next(), Some(3));
+    assert_eq!(arr_iter.next(), None);
+}
+```
+手搓for loop进行循环的方法
+```rust
+#![allow(unused)]
+fn main() {
+let values = vec![1, 2, 3];
+
+{
+    let result = match IntoIterator::into_iter(values) {
+        mut iter => loop {
+            match iter.next() {
+                Some(x) => { println!("{}", x); },
+                None => break,
+            }
+        },
+    };
+    result
+}
+}
+```
+迭代器一般有三种使用方式，如下所示：
+1. into_iter 会夺走所有权
+2. iter 是借用
+3. iter_mut 是可变借用
+
+一些有趣的函数：
+`collect(), iter(), fold()`
+
+这一部分的Rustlings习题可能需要对函数式编程比较熟悉才比较好写。
+## 多线程：
+## 智能指针：
+Box指针指向的东西位于堆上。为了应对递归类型的数据结构大小不可知的情况，采用`Box`进行管理，链接堆上的数据。
+```rust
+enum List {
+    Cons(i32, Box<List>), // 至少在栈上的大小是已知的了。
+    Nil,
+}
+```
+Rc指针用于单线程。如果我们希望在堆上分配一个对象供程序的多个部分使用且无法确定哪个部分最后一个结束时，就可以使用 Rc 成为数据值的所有者。
+```rust
+use std::rc::Rc;
+fn main() {
+    let a = Rc::new(String::from("hello, world"));
+    let b = Rc::clone(&a); // 浅拷贝，仅发生在栈上的拷贝。
+
+    assert_eq!(2, Rc::strong_count(&a));
+    assert_eq!(Rc::strong_count(&a), Rc::strong_count(&b))
+}
+```
+逆操作则是利用drop主动释放，如果不是这一类型的指针，rust编译器会自动给其添上drop释放之。Rc指针的应用例子：多个工具都有一个主人。
+
+为了实现多线程的共享，采用aRc指针帮忙。
+
+```rust
+use std::sync::Arc;
+use std::thread;
+
+fn main() {
+    let s = Arc::new(String::from("多线程漫游者"));
+    for _ in 0..10 {
+        let s = Arc::clone(&s);
+        let handle = thread::spawn(move || {
+           println!("{}", s)
+        });
+    }
+}
+```
+它的API和Rc是一致的，所以使用起来也就很方便哈哈。
+
+Cow指针：clone-on-write functionality
